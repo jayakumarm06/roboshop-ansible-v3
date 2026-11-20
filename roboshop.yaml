@@ -1,0 +1,118 @@
+- name: create ec2 instance and r53 records
+  hosts: local
+  connection: local
+
+  vars:
+    # ansible-playbook roboshop.yaml -e '{"instances":["mongodb"]}'
+    # ansible-playbook roboshop.yaml -e actions="delete" -e '{"instances":["mongodb"]}'
+    # ansible-playbook roboshop.yaml -e '{"actions":"delete","instances":["mongodb"]}'
+    # ansible-playbook roboshop.yaml -e '{"instances":["redis"]}'
+    # ansible-playbook roboshop.yaml -e '{"actions":"delete","instances":["redis"]}'
+    # ansible-playbook roboshop.yaml -e '{"instances":["mysql"]}'
+    # ansible-playbook roboshop.yaml -e '{"actions":"delete","instances":["mysql"]}'
+    # ansible-playbook roboshop.yaml -e '{"instances":["rabbitmq"]}'
+    # ansible-playbook roboshop.yaml -e '{"actions":"delete","instances":["rabbitmq"]}'
+
+    instances:
+      [
+        "mongodb",
+        "redis",
+        "mysql",
+        "rabbitmq",
+        "catalogue",
+        "user",
+        "cart",
+        "shipping",
+        "payment",
+        "dispatch",
+        "frontend",
+      ]
+    #ansible-playbook roboshop.yaml -e '{"instances":["catalogue"]}'
+    # ansible-playbook roboshop.yaml -e actions="delete" -e '{"instances":["catalogue"]}'
+    # ansible-playbook roboshop.yaml -e '{"actions":"delete","instances":["catalogue"]}'
+    # ansible-playbook roboshop.yaml -e '{"instances":["user"]}'
+    # ansible-playbook roboshop.yaml -e '{"actions":"delete","instances":["user"]}'
+    # ansible-playbook roboshop.yaml -e '{"instances":["cart"]}'
+    # ansible-playbook 07-cart.yaml -e "app_version=v4"
+    # ansible-playbook roboshop.yaml -e '{"actions":"delete","instances":["cart"]}'
+    # ansible-playbook roboshop.yaml -e '{"instances":["shipping"]}'
+    # ansible-playbook roboshop.yaml -e '{"actions":"delete","instances":["shipping"]}'
+    # ansible-playbook roboshop.yaml -e '{"instances":["payment"]}'
+    # ansible-playbook roboshop.yaml -e '{"actions":"delete","instances":["payment"]}'
+
+    # instances: ["catalogue", "user", "cart", "shipping", "payment", "dispatch"]
+    actions: create
+    domain_name: dewsecopai.online
+    ami_id: ami-0055977a6e828a4f4
+
+  tasks:
+    - name: create ec2 instance
+      amazon.aws.ec2_instance:
+        name: "roboshop-{{ item }}"
+        image_id: "{{ ami_id }}"
+        instance_type: t3.micro
+        security_groups:
+          - roboshop-common
+          - "roboshop-{{ item }}"
+        region: us-east-1
+      loop: "{{ instances }}"
+      when: actions == "create"
+      register: ec2_output
+
+    # - name: Print ec2 creation output
+    #   debug:
+    #     msg: "{{ ec2_output }}"
+    - name: create Route53 record
+      amazon.aws.route53:
+        state: present
+        zone: "{{ domain_name }}"
+        record: "{{ item.item }}.{{ domain_name }}" # mongodb.dewsecopai.online
+        type: A
+        ttl: 1
+        value: "{{ item.instances[0].private_ip_address }}"
+        overwrite: true
+      loop: "{{ ec2_output.results }}"
+      when: actions == "create"
+      #this is for fortend
+    - name: create Route53 record for frontend
+      amazon.aws.route53:
+        state: present
+        zone: "{{ domain_name }}"
+        record: "{{ domain_name }}" # dewsecopai.online points to frontend public ip
+        type: A
+        ttl: 1
+        value: "{{ item.instances[0].public_ip_address }}"
+        overwrite: true
+      loop: "{{ ec2_output.results }}"
+      when:
+        - actions == "create"
+        - item.item == "frontend"
+
+    - name: delete Route53 records
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ domain_name }}"
+        record: "{{ item }}.{{ domain_name }}"
+        type: A
+        ttl: 1
+      loop: "{{ instances }}"
+      when: actions == "delete"
+
+    - name: delete Route53 records for frontend
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ domain_name }}"
+        record: "{{ domain_name }}"
+        type: A
+        ttl: 1
+      loop: "{{ instances }}"
+      when: actions == "delete"
+
+    - name: delete ec2 instances
+      amazon.aws.ec2_instance:
+        state: absent
+        name: "roboshop-{{ item }}"
+        region: us-east-1
+        wait: false
+      loop: "{{ instances }}"
+      when: actions == "delete"

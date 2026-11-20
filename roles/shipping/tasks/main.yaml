@@ -1,0 +1,44 @@
+- name: application setup
+  include_role:
+    name: common
+    tasks_from: app-setup
+
+- name: nodejs setup
+  include_role:
+    name: common
+    tasks_from: java
+
+- name: systemd setup
+  include_role:
+    name: common
+    tasks_from: systemd-setup
+
+#first check the product load or not
+- name: Check cities loaded data exist or not
+  command: mysql -h {{ mysql_host }} -u root -p{{ mysql_root_password }} -N -B -e "SELECT COUNT(*) FROM cities.cities;"
+  register: cities_output
+  ignore_errors: true
+  tags:
+    - mysql
+
+- name: Print cities_count
+  debug:
+    msg: "{{ cities_output.stdout }}"
+  tags:
+    - mysql
+
+- name: load the cities in mysql
+  shell: mysql -h {{ mysql_host }} -u root -p{{ mysql_root_password }} < /app/db/master-data.sql
+  when: cities_output.rc != 0 or cities_output.stdout | int == 0
+  tags:
+    - mysql
+
+- name: create app-user in mysql
+  shell: mysql -h {{ mysql_host }} -u root -p{{ mysql_root_password }} < /app/db/app-user.sql
+  tags:
+    - mysql
+
+- name: restart application
+  include_role:
+    name: common
+    tasks_from: restart

@@ -1,0 +1,46 @@
+- name: print variables
+  debug:
+    msg: "Course: {{ course }}, Duration: {{ duration }}, Trainer: {{ trainer }}"
+
+- name: application setup
+  include_role:
+    name: common
+    tasks_from: app-setup
+
+- name: nodejs setup
+  include_role:
+    name: common
+    tasks_from: nodejs
+
+- name: systemd setup
+  include_role:
+    name: common
+    tasks_from: systemd-setup
+
+- name: copy mongo repo
+  copy:
+    src: mongo.repo
+    dest: /etc/yum.repos.d/mongo.repo
+
+- name: Install mongodb-mongosh
+  dnf:
+    name: mongodb-mongosh
+    state: present
+
+  #first check the product load or not
+- name: Check products loaded or not
+  command: mongosh --host "{{ mongodb_host }}" --quiet --eval 'db.getSiblingDB("catalogue").products.countDocuments()'
+  register: product_output
+
+- name: Print product_count
+  debug:
+    msg: "{{ product_output }}"
+
+- name: loads the products
+  shell: mongosh --host "{{ mongodb_host }}" </app/db/master-data.js
+  when: product_output.stdout | int == 0
+
+- name: restart application
+  include_role:
+    name: common
+    tasks_from: restart

@@ -1,0 +1,9 @@
+- name: Install golang
+  dnf:
+    name: golang
+    state: present
+
+- name: Build application
+  shell: go build -o dispatch .
+  args:
+    chdir: /app
