@@ -13,10 +13,10 @@
 #========================================================
 # shipping_db_user: "{{ vault_shipping_db_user }}"
 # shipping_db_password: "{{ vault_shipping_db_password }}"
-rabbitmq_user: roboshop
-rabbitmq_password: roboshop123
+# rabbitmq_user: roboshop
+# rabbitmq_password: roboshop123
 
-mysql_root_password: RoboShop@1
+# mysql_root_password: RoboShop@1
 # shipping_db_user: shipping
 # shipping_db_password: RoboShop@1
 
