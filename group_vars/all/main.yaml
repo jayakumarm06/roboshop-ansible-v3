@@ -17,8 +17,8 @@ rabbitmq_user: roboshop
 rabbitmq_password: roboshop123
 
 mysql_root_password: RoboShop@1
-shipping_db_user: shipping
-shipping_db_password: RoboShop@1
+# shipping_db_user: shipping
+# shipping_db_password: RoboShop@1
 
 # mongodb_host: 172.31.7.251
 # redis_host: 172.31.6.229
@@ -29,14 +29,14 @@ shipping_db_password: RoboShop@1
 # rabbitmq_host: 172.31.3.7
 # payment_host: 172.31.0.100
 # catalogue_host: 172.31.14.62
-mongodb_host: mongodb.dewsecopai.online
-redis_host: redis.dewsecopai.online
-mysql_host: mysql.dewsecopai.online
-rabbitmq_host: rabbitmq.dewsecopai.online
-catalogue_host: catalogue.dewsecopai.online
-user_host: user.dewsecopai.online
-cart_host: cart.dewsecopai.online
-shipping_host: shipping.dewsecopai.online
-payment_host: payment.dewsecopai.online
-dispatch_host: dispatch.dewsecopai.online
-frontend_host: frontend.dewsecopai.online
+mongodb_host: mongodb-{{ env }}.dewsecopai.online
+redis_host: redis-{{ env }}.dewsecopai.online
+mysql_host: mysql-{{ env }}.dewsecopai.online
+rabbitmq_host: rabbitmq-{{ env }}.dewsecopai.online
+catalogue_host: catalogue-{{ env }}.dewsecopai.online
+user_host: user-{{ env }}.dewsecopai.online
+cart_host: cart-{{ env }}.dewsecopai.online
+shipping_host: shipping-{{ env }}.dewsecopai.online
+payment_host: payment-{{ env }}.dewsecopai.online
+dispatch_host: dispatch-{{ env }}.dewsecopai.online
+frontend_host: frontend-{{ env }}.dewsecopai.online
