@@ -37,7 +37,7 @@
     msg: "{{ product_output }}"
 
 - name: loads the products
-  shell: mongosh --host "{{ mongodb_host }}" </app/db/master-data.js
+  shell: mongosh --host "{{ mongodb_host }}" < /app/db/master-data.js
   when: product_output.stdout | int == 0
 
 - name: restart application
