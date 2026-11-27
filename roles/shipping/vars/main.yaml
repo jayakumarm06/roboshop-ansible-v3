@@ -1,2 +1,3 @@
 shipping_db_user: "{{ lookup('amazon.aws.aws_ssm', '/roboshop/{{ env }}/shipping_db_user', decrypt=true, region='us-east-1') }}"
 shipping_db_password: "{{ lookup('amazon.aws.aws_ssm', '/roboshop/{{ env }}/shipping_db_password', decrypt=true, region='us-east-1') }}"
+mysql_root_password: "{{ lookup('amazon.aws.aws_ssm', '/roboshop/{{ env }}/mysql_root_password', decrypt=true, region='us-east-1') }}"
