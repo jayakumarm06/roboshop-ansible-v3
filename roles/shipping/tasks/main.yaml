@@ -8,12 +8,6 @@
     name: common
     tasks_from: java
 
-- name: systemd setup
-  include_role:
-    name: common
-    tasks_from: systemd-setup
-
-#first check the product load or not
 - name: Install boto3 and botocore via pip
   ansible.builtin.pip:
     name:
@@ -22,6 +16,12 @@
     state: present
     executable: pip3.9
 
+- name: systemd setup
+  include_role:
+    name: common
+    tasks_from: systemd-setup
+
+#first check the product load or not
 - name: Check cities loaded data exist or not
   command: mysql -h {{ mysql_host }} -u root -p{{ mysql_root_password }} -N -B -e "SELECT COUNT(*) FROM cities.cities;"
   register: cities_output
